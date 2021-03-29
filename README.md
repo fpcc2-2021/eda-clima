@@ -1,17 +1,21 @@
 # EDA em dados meteorológicos do INMET
 
-Dados vêm do BDMEP: https://bdmep.inmet.gov.br/ . Segui as instruções lá selecionando uma estação convencional em João Pessoa, Campina Grande e Patos - PB, e solicitando dados diários desde 2011. 
+Dados vêm do BDMEP: https://tempo.inmet.gov.br/ . Selecionei lá a estação convencional em João Pessoa, Campina Grande e Patos - PB, e baixei os csvs com dados desde 2010. 
 
 Os dados brutos estão em `data/raw`. O código em `transform` faz ETL e o coloca em `data/`.
 
+No processo de ETL, calculamos as variáveis de interesse por semana. Isso porque há bastante medições vazias nas estações, e queremos deixar o dado mais fácil de ser trabalhado. Mas ainda há várias semanas onde alguma ou todas as medidas são NA.
+
 Colunas nos dados prontos: 
 
-[1] "cidade"                                  
-[2] "Data Medicao"                            
-[3] "INSOLACAO TOTAL, DIARIO(h)"              
-[4] "PRECIPITACAO TOTAL, DIARIO(mm)"          
-[5] "TEMPERATURA MAXIMA, DIARIA(°C)"          
-[6] "TEMPERATURA MEDIA COMPENSADA, DIARIA(°C)"
-[7] "TEMPERATURA MINIMA, DIARIA(°C)"          
-[8] "UMIDADE RELATIVA DO AR, MEDIA DIARIA(%)" 
-[9] "VENTO, VELOCIDADE MEDIA DIARIA(m/s)"
+```
+$ cidade      <chr> "Campina Grande", "Campina Grande", "…
+$ semana      <date> 2009-12-27, 2010-01-03, 2010-01-10, …
+$ temp_max    <dbl> 29.9, 31.4, 32.1, 31.0, 31.2, 32.1, 3…
+$ temp_media  <dbl> 25.90000, 25.53333, 25.60952, 24.2095…
+$ temp_min    <dbl> 21.9, 21.2, 21.3, 20.5, 21.2, 21.4, 2…
+$ vento_medio <dbl> 3.960000, 4.080952, 3.952381, 2.86000…
+$ vento_max   <dbl> 5.0, 5.3, 6.6, 5.0, 5.5, 6.5, 6.3, 5.…
+$ umidade     <dbl> 76.00000, 76.23810, 75.95238, 85.3333…
+$ chuva       <dbl> 0.0, 4.7, 0.2, 69.3, 3.8, 1.2, 10.9, …
+```

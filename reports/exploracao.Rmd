@@ -1,0 +1,127 @@
+---
+title: "Exploração do clima em João Pessoa, Campina Grande e Patos - PB"
+output: html_notebook
+---
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+theme_set(theme_bw())
+```
+
+```{r}
+# SEMPRE read_csv NUNCA read.csv
+clima_tudo = read_csv(
+    here("data/tempo-jp-cg-pt.csv"),
+    col_types = cols(
+        cidade = col_character(),
+        semana = col_date(format = ""),
+        temp_max = col_double(),
+        temp_media = col_double(),
+        temp_min = col_double(),
+        vento_medio = col_double(),
+        vento_max = col_double(),
+        umidade = col_double(),
+        chuva = col_double(),
+        ano = col_integer(),
+        mes = col_integer()
+    )
+)
+
+clima = clima_tudo %>% 
+    filter(ano == 2019)
+
+glimpse(clima)
+```
+## Vídeo 1
+
+```{r}
+clima %>% 
+    count(cidade)
+```
+
+Como se comparam as temperaturas médias das 3 cidades?
+
+```{r}
+clima %>% 
+    ggplot(mapping = aes(y = cidade, x = temp_media)) + 
+    # geom_point(alpha = 0.3) + 
+    geom_jitter(height = .1, alpha = .6, color = "coral") + 
+    labs(
+         y = "", 
+         x = "Temperatura Média Semanal (C)"
+    )
+```
+
+A temperatura média variou em uma faixa maior de valores para Patos e CG do que para JP. Há semanas em Patos que são mais quentes do que nas outras cidades. O mesmo acontece para CG com o frio. 
+
+POSIÇÃO DOS VALORES 
+VARIAÇÃO: FAIXA DE VALORES
+ESPALHAMENTO / CONCENTRAÇÃO
+PONTOS EXTREMOS (OUTLIERS -- cuidado)
+
+
+```{r}
+clima %>% 
+    ggplot(mapping = aes(y = cidade, x  = chuva)) + 
+    geom_jitter(height = .1, color = "steelblue", alpha = .5)
+```
+
+```{r}
+clima_tudo %>% 
+    filter(ano >= 2020, cidade != "Patos") %>% 
+    ggplot(aes(x = semana, y = temp_media, color = cidade)) + 
+    geom_point()
+```
+```{r}
+clima %>% 
+    filter(temp_media < 21)
+```
+```{r}
+clima %>% 
+    ggplot(aes(x  = semana, y = chuva, color = cidade)) + 
+    facet_wrap(~ cidade, ncol = 1) + 
+    geom_point()
+```
+
+Escrever aqui interpretações da figura.
+
+## Vídeo 2
+
+
+```{r}
+clima %>% 
+    ggplot(aes(x = chuva)) +
+    facet_wrap(~ cidade, ncol = 1) + 
+    geom_histogram(binwidth = 10, color = "black", fill = "steelblue", boundary = 0)
+
+```
+
+```{r}
+clima %>% 
+    ggplot(aes(x = temp_media)) + 
+    facet_wrap(~ cidade, ncol = 1)+ 
+    geom_histogram(binwidth = .5, fill = "coral", color = "black") + 
+    geom_rug()
+```
+
+SIMETRIA / ASSIMETRIA
+CAUDA
+
+```{r}
+clima_tudo %>% 
+    filter(cidade == "Campina Grande", ano > 2009, ano < 2021) %>% 
+    ggplot(aes(x = temp_media)) + 
+    facet_wrap(~ ano)+ 
+    geom_histogram(binwidth = .5, fill = "coral", color = "black") 
+```
+
+```{r}
+clima_tudo %>% 
+    filter(cidade == "Campina Grande", ano > 2009, ano < 2021) %>% 
+    ggplot(aes(x = temp_media)) + 
+    facet_wrap(~ ano)+ 
+    geom_density(fill = "coral", color = "black") 
+    
+```
+
