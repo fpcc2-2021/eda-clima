@@ -1,0 +1,123 @@
+---
+title: "Sumários, parte 2"
+output: html_notebook
+---
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(here)
+theme_set(theme_bw())
+```
+
+```{r}
+clima_tudo = read_csv(
+    here("data/tempo-jp-cg-pt.csv"),
+    col_types = cols(
+        .default = col_double(),
+        cidade = col_character(),
+        semana = col_date(format = ""),
+        ano = col_integer(),
+        mes = col_integer()
+    )
+)
+
+clima10 = clima_tudo %>% 
+    filter(ano <= 2019, ano >= 2010, !is.na(temp_max))
+
+glimpse(clima10)
+```
+
+```{r}
+clima10 %>% 
+    ggplot(aes(x = ano, y = temp_max)) +
+    facet_wrap(~ cidade) +
+    geom_point(alpha = .5, size = .9) + 
+    labs(
+        y = "Calor"
+    )
+```
+
+```{r}
+sumarios = clima10 %>% 
+    group_by(cidade, ano) %>% 
+    summarise(temp_max_anual = max(temp_max), 
+              temp_min_anual = min(temp_max),
+              temp_metade = median(temp_max),
+              chuva_max = max(chuva), 
+              chuva_mediana = median(chuva), 
+              chuva_min = min(chuva),
+              chuva_90perc = quantile(chuva, .9),
+              .groups = "drop")
+```
+
+
+```{r}
+clima10 %>% 
+    ggplot(aes(x = ano, y = temp_max)) +
+    facet_wrap(~ cidade) +
+    geom_point(alpha = .75, size = .9, color = "grey") + 
+    geom_point(data = sumarios, aes(y = temp_max_anual)) + 
+    geom_point(data = sumarios, aes(y = temp_min_anual)) + 
+    geom_point(data = sumarios, aes(y = temp_metade), color = "red") + 
+    labs(
+        y = "Calor"
+    )
+```
+
+# Variação / Dispersão
+
+## Range, Amplitude
+
+```{r}
+variacao = clima10 %>% 
+    group_by(cidade, ano) %>% 
+    summarise(amplitude = max(temp_max, na.rm = TRUE) - min(temp_max, na.rm = TRUE), 
+              interquartil = IQR(temp_max),
+              .groups = "drop")
+```
+
+```{r}
+variacao %>% 
+    ggplot(aes(x = ano, y = amplitude, color = cidade)) + 
+    geom_point() + 
+    geom_line()
+```
+
+```{r}
+variacao %>% 
+    ggplot(aes(x = ano, y = interquartil, color = cidade)) + 
+    geom_point() + 
+    geom_line()
+```
+
+## Centro 
+
+```{r}
+clima10 %>% 
+    ggplot(aes(x = ano, y = temp_max)) + 
+    facet_wrap(~ cidade) + 
+    geom_point(size = .9, alpha = .7, color = "gray") + 
+    stat_summary(geom = "point", color = "coral", fun = mean) +
+    stat_summary(geom = "point", color = "darkblue", fun = median) 
+```
+
+```{r}
+clima10 %>% 
+    ggplot(aes(x = ano, y = chuva)) + 
+    facet_wrap(~ cidade) + 
+    geom_point(size = .9, alpha = .7, color = "gray") + 
+    stat_summary(geom = "point", color = "coral", fun = mean) +
+    stat_summary(geom = "point", color = "darkblue", fun = median) 
+```
+
+## Variância e Desvio Padrão
+
+$s^2$
+
+```{r}
+clima10 %>% 
+    group_by(cidade) %>% 
+    summarise(variancia = sum((temp_max - mean(temp_max))**2) / n(), 
+              desvio_padrao = sqrt(variancia))
+```
+
